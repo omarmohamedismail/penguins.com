@@ -44,6 +44,7 @@ tailwind.config = {
   .scrollbar-hide::-webkit-scrollbar { display:none; }
   .thin-scroll::-webkit-scrollbar { width:6px; }
   .thin-scroll::-webkit-scrollbar-thumb { background:#1E1E1E; border-radius:4px; }
+  .thin-scroll { -webkit-overflow-scrolling:touch; }
   .vault-container { position:relative; width:100%; aspect-ratio:16/9; background:#0D0D0D; border-radius:10px; overflow:hidden; border:1px solid #1E1E1E; }
   .vault-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .vault-after { clip-path:inset(0 0 0 50%); }
@@ -55,7 +56,7 @@ tailwind.config = {
   .chat-bubble-me { background:#6C5CE7; color:#fff; border-radius:14px 14px 3px 14px; }
   .chat-bubble-them { background:#131313; border:1px solid #1E1E1E; color:#F5F5F5; border-radius:14px 14px 14px 3px; }
   .auth-bg { background: radial-gradient(circle at 30% 20%, rgba(108,92,231,0.12) 0%, transparent 45%), radial-gradient(circle at 80% 80%, rgba(245,185,66,0.06) 0%, transparent 40%), #000; }
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:60; display:flex; align-items:flex-start; justify-content:center; padding-top:8vh; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:60; display:flex; align-items:flex-start; justify-content:center; padding:6vh 16px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
   .kanban-col { background:#0D0D0D; border:1px solid #1E1E1E; border-radius:14px; min-height:120px; }
   .kanban-card { background:#131313; border:1px solid #1E1E1E; border-radius:10px; cursor:grab; }
   .kanban-card.dragging { opacity:0.4; }
@@ -127,7 +128,7 @@ tailwind.config = {
         <span class="flex items-center"><span class="mr-2">?</span>Help & Guide</span>
       </button>
     </div>
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-hide">
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-hide min-h-0">
       <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-1">Overview</p>
       <a href="#" data-page="dashboard" class="nav-link active flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◆</span>Dashboard</a>
       <a href="#" data-page="messages" class="nav-link flex items-center justify-between px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="flex items-center"><span class="mr-3">✉</span>Messages</span><span id="unread-badge" class="hidden bg-accent text-white text-[10px] rounded-full px-1.5 py-0.5"></span></a>
@@ -240,7 +241,7 @@ tailwind.config = {
               <button onclick="backToChatList()" class="sm:hidden mr-3 text-white text-lg leading-none">←</button>
               <div id="chat-header-info" class="flex items-center flex-1"></div>
             </div>
-            <div class="flex-1 overflow-y-auto thin-scroll p-4 space-y-3" id="chat-thread"></div>
+            <div class="flex-1 overflow-y-auto thin-scroll p-4 space-y-3 min-h-0" id="chat-thread"></div>
             <form id="form-chat" class="p-3 border-t border-border flex gap-2">
               <input type="text" id="chat-input" placeholder="Write a message…" class="flex-1 input-dark rounded-lg px-4 py-2 text-sm">
               <button type="submit" class="px-5 py-2 bg-accent text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition">Send</button>
@@ -785,9 +786,9 @@ tailwind.config = {
 
 <!-- ================= COMMAND PALETTE ================= -->
 <div id="paletteOverlay" class="modal-overlay hidden" onclick="if(event.target===this)closePalette()">
-  <div class="card rounded-2xl w-full max-w-lg mx-4 overflow-hidden">
-    <input id="paletteInput" type="text" placeholder="Search pages, clients, actions…" class="w-full bg-transparent px-5 py-4 text-white text-sm outline-none border-b border-border" oninput="filterPalette()">
-    <div id="paletteResults" class="max-h-80 overflow-y-auto thin-scroll py-2"></div>
+  <div class="card rounded-2xl w-full max-w-lg overflow-hidden">
+    <input id="paletteInput" type="text" placeholder="Search pages, clients, actions…" class="w-full bg-card px-5 py-4 text-white text-sm outline-none border-b border-border sticky top-0" oninput="filterPalette()">
+    <div id="paletteResults" class="py-2"></div>
   </div>
 </div>
 
@@ -1916,13 +1917,13 @@ window.openPalette = () => {
   const input = document.getElementById('paletteInput');
   input.value = '';
   filterPalette();
-  setTimeout(()=>input.focus(), 50);
+  if (window.innerWidth >= 768) setTimeout(()=>input.focus(), 50);
 };
 window.closePalette = () => document.getElementById('paletteOverlay').classList.add('hidden');
 
 window.filterPalette = () => {
   const q = document.getElementById('paletteInput').value.toLowerCase();
-  const items = paletteItems().filter(i => i.label.toLowerCase().includes(q)).slice(0,8);
+  const items = paletteItems().filter(i => i.label.toLowerCase().includes(q));
   document.getElementById('paletteResults').innerHTML = items.length ? items.map(i => `
     <button onclick="paletteSelect('${i.type}','${(i.page||i.name).replace(/'/g,"\\'")}')" class="w-full flex items-center gap-3 px-5 py-2.5 hover:bg-card2 text-left transition">
       <span class="text-accent w-5 text-center">${i.icon}</span>
