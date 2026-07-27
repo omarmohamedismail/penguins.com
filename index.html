@@ -63,6 +63,10 @@ tailwind.config = {
   .insight-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   kbd { background:#1E1E1E; border:1px solid #2A2A2A; border-radius:4px; padding:1px 6px; font-size:11px; font-family:'JetBrains Mono',monospace; color:#8A8A8E; }
   .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+  @media (max-width: 640px) {
+    .cal-grid-wrap { overflow-x:auto; }
+    .cal-grid { grid-template-columns:repeat(7, minmax(96px,1fr)); min-width:720px; }
+  }
   .cal-day { background:#0D0D0D; border:1px solid #1E1E1E; border-radius:10px; min-height:90px; padding:6px; }
   .cal-day.today { border-color:#6C5CE7; }
   .exercise-chip { background:#131313; border:1px solid #1E1E1E; border-radius:8px; padding:8px 10px; cursor:pointer; transition:.15s; }
@@ -76,21 +80,25 @@ tailwind.config = {
   .toast-wrap { position:fixed; bottom:20px; right:20px; z-index:80; display:flex; flex-direction:column; gap:8px; }
   .toast { background:#131313; border:1px solid #2A2A2A; border-left:3px solid #6C5CE7; color:#F5F5F5; padding:12px 16px; border-radius:10px; font-size:13px; box-shadow:0 10px 30px -10px rgba(0,0,0,0.6); animation:toastIn .25s ease; max-width:300px; }
   @keyframes toastIn { from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);} }
-  .notif-bell { position:fixed; top:18px; right:18px; z-index:30; }
   .notif-dot { position:absolute; top:-2px; right:-2px; width:9px; height:9px; background:#F5B942; border-radius:50%; border:2px solid #000; }
-  .notif-panel { position:absolute; top:44px; right:0; width:320px; max-height:400px; overflow-y:auto; }
+  .notif-panel { position:absolute; top:48px; right:0; width:320px; max-width:calc(100vw - 32px); max-height:400px; overflow-y:auto; z-index:35; }
   .checklist-item { display:flex; align-items:center; gap:10px; padding:8px 0; }
   .checklist-check { width:20px; height:20px; border-radius:6px; border:1.5px solid #2A2A2A; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12px; }
   .checklist-check.done { background:#6C5CE7; border-color:#6C5CE7; color:#fff; }
   .info-btn { width:20px; height:20px; border-radius:50%; border:1px solid #2A2A2A; color:#8A8A8E; font-size:11px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:.15s; }
   .info-btn:hover { border-color:#6C5CE7; color:#6C5CE7; }
+  #sidebar { transition: transform .25s ease; }
+  @media (max-width: 767px) {
+    #sidebar { position:fixed; inset-y:0; left:0; z-index:50; transform:translateX(-100%); width:78vw; max-width:300px; }
+    #sidebar.open { transform:translateX(0); }
+  }
 </style>
 </head>
 <body class="text-text antialiased">
 
 <div id="loadingVeil" class="loading-veil">
   <div class="text-center">
-    <div class="display text-3xl text-white mb-2">Penguins<span class="text-accent">.</span></div>
+    <div class="display text-3xl text-white mb-2">Penguins 🐧<span class="text-accent">.</span></div>
     <div class="text-muted text-xs tracking-widest uppercase">Loading dashboard…</div>
   </div>
 </div>
@@ -98,11 +106,17 @@ tailwind.config = {
 <!-- ================= APP ================= -->
 <div id="app" class="flex h-screen overflow-hidden">
 
+  <!-- SIDEBAR BACKDROP (mobile only) -->
+  <div id="sidebarBackdrop" onclick="closeSidebar()" class="hidden fixed inset-0 bg-black/60 z-40 md:hidden"></div>
+
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-card border-r border-border flex-col hidden md:flex shrink-0">
-    <div class="p-6 border-b border-border">
-      <h1 class="display text-2xl font-bold text-white">Penguins<span class="text-accent">.</span></h1>
-      <p class="text-[11px] text-muted mt-1 tracking-wide uppercase">Coach Platform</p>
+  <aside id="sidebar" class="w-64 bg-card border-r border-border flex-col flex shrink-0">
+    <div class="p-6 border-b border-border flex items-center justify-between">
+      <div>
+        <h1 class="display text-2xl font-bold text-white">Penguins 🐧<span class="text-accent">.</span></h1>
+        <p class="text-[11px] text-muted mt-1 tracking-wide uppercase">Coach Platform</p>
+      </div>
+      <button onclick="closeSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center text-muted hover:text-white text-lg">×</button>
     </div>
     <div class="px-6 pt-4 space-y-2">
       <button onclick="openPalette()" class="w-full flex items-center justify-between px-3 py-2 bg-black border border-border rounded-lg text-muted text-xs hover:border-accent/50 transition">
@@ -160,19 +174,24 @@ tailwind.config = {
   </aside>
 
   <!-- MAIN -->
-  <!-- NOTIFICATION BELL -->
-  <div class="notif-bell">
-    <button onclick="toggleNotifPanel()" class="relative w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center text-white hover:border-accent/50 transition">
-      🔔
-      <span id="notif-dot" class="notif-dot hidden"></span>
-    </button>
-    <div id="notif-panel" class="notif-panel card rounded-2xl p-3 thin-scroll hidden">
-      <p class="text-xs text-muted uppercase tracking-wide px-2 py-1">Notifications</p>
-      <div id="notif-list" class="space-y-1"></div>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- APP TOPBAR (always visible, every screen size) -->
+    <div class="flex items-center gap-3 px-4 md:px-8 py-3 border-b border-border bg-card shrink-0">
+      <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center text-white text-xl leading-none">☰</button>
+      <h1 class="md:hidden display text-lg font-bold text-white">Penguins 🐧<span class="text-accent">.</span></h1>
+      <div class="flex-1"></div>
+      <div class="relative" id="notifBellWrap">
+        <button onclick="toggleNotifPanel()" class="relative w-10 h-10 rounded-full bg-black border border-border flex items-center justify-center text-white hover:border-accent/50 transition">
+          🔔
+          <span id="notif-dot" class="notif-dot hidden"></span>
+        </button>
+        <div id="notif-panel" class="notif-panel card rounded-2xl p-3 thin-scroll hidden">
+          <p class="text-xs text-muted uppercase tracking-wide px-2 py-1">Notifications</p>
+          <div id="notif-list" class="space-y-1"></div>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <main class="flex-1 overflow-y-auto p-4 md:p-8">
+    <main class="flex-1 overflow-y-auto p-4 md:p-8">
 
     <!-- ===== DASHBOARD ===== -->
     <div id="page-dashboard" class="page active">
@@ -215,9 +234,12 @@ tailwind.config = {
       <header class="mb-6"><h2 class="display text-3xl font-bold text-white">Messages</h2><p class="text-muted mt-1">Chat directly with your clients.</p></header>
       <div class="card rounded-2xl overflow-hidden" style="height:70vh;">
         <div class="flex h-full">
-          <div class="w-full sm:w-64 border-r border-border overflow-y-auto thin-scroll shrink-0" id="chat-client-list"></div>
-          <div class="hidden sm:flex flex-1 flex-col">
-            <div class="p-4 border-b border-border flex items-center" id="chat-header"></div>
+          <div class="w-full sm:w-64 border-r border-border overflow-y-auto thin-scroll shrink-0" id="chat-list-panel"><div id="chat-client-list"></div></div>
+          <div class="hidden sm:flex flex-1 flex-col" id="chat-thread-panel">
+            <div class="p-4 border-b border-border flex items-center" id="chat-header">
+              <button onclick="backToChatList()" class="sm:hidden mr-3 text-white text-lg leading-none">←</button>
+              <div id="chat-header-info" class="flex items-center flex-1"></div>
+            </div>
             <div class="flex-1 overflow-y-auto thin-scroll p-4 space-y-3" id="chat-thread"></div>
             <form id="form-chat" class="p-3 border-t border-border flex gap-2">
               <input type="text" id="chat-input" placeholder="Write a message…" class="flex-1 input-dark rounded-lg px-4 py-2 text-sm">
@@ -298,7 +320,7 @@ tailwind.config = {
 
       <div id="live-view-cal" class="card rounded-2xl p-6 hidden">
         <h3 class="display text-lg font-semibold text-white mb-4">This Week</h3>
-        <div class="cal-grid" id="live-calendar"></div>
+        <div class="cal-grid-wrap"><div class="cal-grid" id="live-calendar"></div></div>
       </div>
     </div>
 
@@ -522,20 +544,24 @@ tailwind.config = {
             <div class="flex justify-between text-sm"><span class="text-muted">Member since</span><span class="text-white font-medium">Jan 2025</span></div>
           </div>
         </div>
-        <div class="lg:col-span-2 card rounded-2xl p-6">
-          <h3 class="display text-lg font-semibold text-white mb-4">Profile Settings</h3>
-          <form id="form-account" class="space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label class="text-xs text-muted mb-1 block">Full Name</label><input type="text" name="name" class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
-              <div><label class="text-xs text-muted mb-1 block">Email</label><input type="email" name="email" class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
-            </div>
-            <div><label class="text-xs text-muted mb-1 block">Coaching Niche</label>
-              <select name="niche" class="w-full input-dark rounded-lg px-4 py-2 text-sm"><option>Fitness / Strength</option><option>Life & Mindset</option><option>Business / Executive</option><option>Nutrition</option><option>Other</option></select>
-            </div>
-            <div><label class="text-xs text-muted mb-1 block">Bio</label><textarea name="bio" rows="4" class="w-full input-dark rounded-lg px-4 py-2 text-sm" placeholder="Tell clients about your approach..."></textarea></div>
-            <div><label class="text-xs text-muted mb-1 block">Hourly Rate ($)</label><input type="number" name="rate" step="1" class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
-            <button type="submit" class="px-6 py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-indigo-500 transition glow">Save Changes</button>
-          </form>
+        <div class="lg:col-span-2 space-y-6">
+          <div id="account-pending-banner" class="hidden"></div>
+          <div class="card rounded-2xl p-6">
+            <h3 class="display text-lg font-semibold text-white mb-1">Profile Settings</h3>
+            <p class="text-muted text-xs mb-4">Changes here are submitted as a request — nothing updates on your live profile until Penguins reviews and approves it.</p>
+            <form id="form-account" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><label class="text-xs text-muted mb-1 block">Full Name</label><input type="text" name="name" class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+                <div><label class="text-xs text-muted mb-1 block">Email</label><input type="email" name="email" class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+              </div>
+              <div><label class="text-xs text-muted mb-1 block">Coaching Niche</label>
+                <select name="niche" class="w-full input-dark rounded-lg px-4 py-2 text-sm"><option>Fitness / Strength</option><option>Life & Mindset</option><option>Business / Executive</option><option>Nutrition</option><option>Other</option></select>
+              </div>
+              <div><label class="text-xs text-muted mb-1 block">Bio</label><textarea name="bio" rows="4" class="w-full input-dark rounded-lg px-4 py-2 text-sm" placeholder="Tell clients about your approach..."></textarea></div>
+              <div><label class="text-xs text-muted mb-1 block">Hourly Rate ($)</label><input type="number" name="rate" step="1" class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+              <button type="submit" id="account-submit-btn" class="px-6 py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-indigo-500 transition glow">Submit for Approval</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -674,6 +700,7 @@ tailwind.config = {
     </div>
 
   </main>
+  </div>
 </div>
 
 <!-- ================= ADD COHORT MODAL ================= -->
@@ -779,6 +806,7 @@ function defaultData() {
       { id: 2, text: 'Follow up with Liv Andersen (Pipeline)', done: false }
     ],
     account: { name: 'Jordan Diaz', email: '', niche: 'Fitness / Strength', bio: '', rate: 75 },
+    pendingAccountChange: null,
     plans: [
       { id: 1, client: 'Alex M.', title: 'Week 3 - Hypertrophy Push', type: 'Training', details: 'Bench Press 4x8\nOHP 3x10\nLateral Raises 3x15\nTricep Dips 3x12', sent: '2 days ago' },
       { id: 2, client: 'Sarah K.', title: 'Nutrition Plan - Cut Phase', type: 'Nutrition', details: 'Calories: 1,800\nProtein: 150g\nCarbs: 120g\nFats: 55g', sent: '5 days ago' }
@@ -907,11 +935,20 @@ async function enterApp() {
 // ==========================================
 // ROUTER
 // ==========================================
-window.goToAccount = (e) => { e.preventDefault(); navigateTo('account'); };
+window.openSidebar = () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarBackdrop').classList.remove('hidden');
+};
+window.closeSidebar = () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.add('hidden');
+};
+window.goToAccount = (e) => { e.preventDefault(); navigateTo('account'); closeSidebar(); };
 document.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', e => {
     e.preventDefault();
     navigateTo(link.dataset.page);
+    closeSidebar();
   });
 });
 
@@ -933,6 +970,7 @@ function renderAll() {
   const an = document.querySelector('#form-account [name="niche"]'); if (an) an.value = db.account.niche;
   const ab = document.querySelector('#form-account [name="bio"]'); if (ab) ab.value = db.account.bio;
   const ar = document.querySelector('#form-account [name="rate"]'); if (ar) ar.value = db.account.rate;
+  renderAccountApproval();
 
   // Dashboard
   const earnings = db.shop.reduce((a,b)=>a+b.price,0)*10 + db.plans.length*150 + db.library.reduce((a,b)=>a+(b.tier==='Paid'?b.price*b.downloads:0),0);
@@ -1090,13 +1128,67 @@ document.getElementById('form-shop').onsubmit = e => { e.preventDefault(); let f
 document.getElementById('form-live').onsubmit = e => { e.preventDefault(); let f=new FormData(e.target); db.sessions.push({id:Date.now(),topic:f.get('topic'),time:f.get('time'),access:f.get('access')}); saveData(); e.target.reset(); renderAll(); toast('✅ Session scheduled.'); };
 document.getElementById('form-community').onsubmit = e => { e.preventDefault(); let f=new FormData(e.target); db.community.unshift({id:Date.now(),user:'Coach',type:f.get('type'),text:f.get('post'),likes:0,date:'Just now'}); saveData(); e.target.reset(); renderAll(); };
 document.getElementById('form-account').onsubmit = e => {
-  e.preventDefault(); let f = new FormData(e.target);
-  db.account.name = f.get('name') || db.account.name;
-  db.account.email = f.get('email') || db.account.email;
-  db.account.niche = f.get('niche') || db.account.niche;
-  db.account.bio = f.get('bio') || '';
-  db.account.rate = parseFloat(f.get('rate')) || db.account.rate;
+  e.preventDefault();
+  if (db.pendingAccountChange) { toast('You already have a request awaiting approval.'); return; }
+  let f = new FormData(e.target);
+  const requested = {
+    name: f.get('name') || db.account.name,
+    email: f.get('email') || db.account.email,
+    niche: f.get('niche') || db.account.niche,
+    bio: f.get('bio') || '',
+    rate: parseFloat(f.get('rate')) || db.account.rate
+  };
+  const changed = JSON.stringify(requested) !== JSON.stringify({ name: db.account.name, email: db.account.email, niche: db.account.niche, bio: db.account.bio, rate: db.account.rate });
+  if (!changed) { toast('No changes to submit.'); return; }
+  db.pendingAccountChange = { ...requested, submittedAt: 'Just now' };
   saveData(); renderAll();
+  toast('Submitted — awaiting Penguins approval.');
+};
+
+function renderAccountApproval() {
+  const banner = document.getElementById('account-pending-banner');
+  const btn = document.getElementById('account-submit-btn');
+  const form = document.getElementById('form-account');
+  if (!banner || !form) return;
+  const fields = form.querySelectorAll('input, select, textarea');
+  if (db.pendingAccountChange) {
+    const p = db.pendingAccountChange;
+    fields.forEach(f => f.disabled = true);
+    if (btn) { btn.disabled = true; btn.innerText = 'Pending Approval'; btn.classList.add('opacity-50','cursor-not-allowed'); }
+    banner.classList.remove('hidden');
+    banner.innerHTML = `
+      <div class="card rounded-2xl p-5 border-gold/40">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-gold/15 text-gold font-semibold">PENDING APPROVAL</span>
+          <span class="text-muted text-xs">Submitted ${p.submittedAt}</span>
+        </div>
+        <p class="text-text text-sm mb-3">Your profile changes have been sent to the Penguins team for review. Nothing on your live profile changes until it's approved.</p>
+        <div class="bg-black border border-border rounded-lg p-3 text-xs text-muted space-y-1 mb-4">
+          <p><span class="text-white">Name:</span> ${p.name}</p>
+          <p><span class="text-white">Email:</span> ${p.email || '—'}</p>
+          <p><span class="text-white">Niche:</span> ${p.niche}</p>
+          <p><span class="text-white">Rate:</span> $${p.rate}/hr</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="cancelAccountRequest()" class="flex-1 py-2 bg-black border border-border text-muted text-xs font-medium rounded-lg hover:text-white transition">Withdraw Request</button>
+          <button onclick="approveAccountChange()" class="flex-1 py-2 bg-accent/15 text-accent text-xs font-semibold rounded-lg hover:bg-accent/25 transition">Simulate Penguins Approval</button>
+        </div>
+      </div>`;
+  } else {
+    fields.forEach(f => f.disabled = false);
+    if (btn) { btn.disabled = false; btn.innerText = 'Submit for Approval'; btn.classList.remove('opacity-50','cursor-not-allowed'); }
+    banner.classList.add('hidden');
+    banner.innerHTML = '';
+  }
+}
+window.cancelAccountRequest = () => { db.pendingAccountChange = null; saveData(); renderAll(); toast('Request withdrawn.'); };
+window.approveAccountChange = () => {
+  if (!db.pendingAccountChange) return;
+  const { name, email, niche, bio, rate } = db.pendingAccountChange;
+  db.account = { name, email, niche, bio, rate };
+  db.pendingAccountChange = null;
+  saveData(); renderAll();
+  toast('✅ Approved — profile updated.');
 };
 
 window.toggleLibraryPrice = () => {
@@ -1146,7 +1238,7 @@ function renderChatList() {
 function renderChatThread() {
   const name = db.activeChat;
   const thread = db.chats[name] || [];
-  document.getElementById('chat-header').innerHTML = `<div class="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-bold mr-3">${name[0]}</div><div><p class="text-white text-sm font-semibold">${name}</p><p class="text-muted text-xs">Client</p></div>`;
+  document.getElementById('chat-header-info').innerHTML = `<div class="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-bold mr-3">${name[0]}</div><div><p class="text-white text-sm font-semibold">${name}</p><p class="text-muted text-xs">Client</p></div>`;
   document.getElementById('chat-thread').innerHTML = thread.length ? thread.map(m => `
     <div class="flex ${m.from==='me'?'justify-end':'justify-start'}">
       <div class="max-w-[70%] px-4 py-2 text-sm ${m.from==='me'?'chat-bubble-me':'chat-bubble-them'}">
@@ -1156,7 +1248,19 @@ function renderChatThread() {
     </div>`).join('') : '<p class="text-muted text-sm text-center py-10">Start the conversation.</p>';
   const el = document.getElementById('chat-thread'); el.scrollTop = el.scrollHeight;
 }
-window.openChat = (name) => { db.activeChat = name; renderChatList(); renderChatThread(); };
+window.openChat = (name) => {
+  db.activeChat = name; renderChatList(); renderChatThread();
+  if (window.innerWidth < 640) {
+    document.getElementById('chat-list-panel').classList.add('hidden');
+    const panel = document.getElementById('chat-thread-panel');
+    panel.classList.remove('hidden'); panel.classList.add('flex');
+  }
+};
+window.backToChatList = () => {
+  document.getElementById('chat-list-panel').classList.remove('hidden');
+  const panel = document.getElementById('chat-thread-panel');
+  panel.classList.add('hidden'); panel.classList.remove('flex');
+};
 document.getElementById('form-chat').onsubmit = e => {
   e.preventDefault();
   const input = document.getElementById('chat-input');
