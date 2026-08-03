@@ -6,7 +6,7 @@
 <title>Penguins | Coach Platform</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 tailwind.config = {
   theme: {
@@ -31,11 +31,26 @@ tailwind.config = {
 }
 </script>
 <style>
-  body { background:#000000; font-family:'Inter',sans-serif; }
+  :root {
+    --accent-color:#6C5CE7; --gold-color:#F5B942;
+    --bg-c:#000000; --card-c:#0D0D0D; --card2-c:#131313; --border-c:#1E1E1E; --text-c:#F5F5F5; --muted-c:#8A8A8E;
+  }
+  html[data-theme="light"] {
+    --bg-c:#FAFAFA; --card-c:#FFFFFF; --card2-c:#F2F2F4; --border-c:#E3E3E7; --text-c:#111114; --muted-c:#6B6B72;
+  }
+  body { background:var(--bg-c); color:var(--text-c); font-family:'Inter',sans-serif; transition:background .2s ease, color .2s ease; }
+  .bg-black{background-color:var(--bg-c)!important;}
+  .bg-card{background-color:var(--card-c)!important;}
+  .bg-card2{background-color:var(--card2-c)!important;}
+  .border-border{border-color:var(--border-c)!important;}
+  .text-white{color:var(--text-c)!important;}
+  .text-text{color:var(--text-c)!important;}
+  .text-muted{color:var(--muted-c)!important;}
+  .hover\:text-white:hover{color:var(--text-c)!important;}
   .display { font-family:'Space Grotesk',sans-serif; }
-  .card { background:#0D0D0D; border:1px solid #1E1E1E; }
+  .card { background:var(--card-c); border:1px solid var(--border-c); }
   .glow { box-shadow:0 0 0 1px rgba(108,92,231,0.25), 0 8px 28px -12px rgba(108,92,231,0.35); }
-  .input-dark { background:#000000; border:1px solid #1E1E1E; color:#F5F5F5; }
+  .input-dark { background:var(--bg-c); border:1px solid var(--border-c); color:var(--text-c); }
   .input-dark:focus { border-color:#6C5CE7; outline:none; box-shadow:0 0 0 2px rgba(108,92,231,0.2); }
   .page { display:none; }
   .page.active { display:block; animation:rise .3s ease; }
@@ -83,6 +98,23 @@ tailwind.config = {
   @keyframes toastIn { from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);} }
   .notif-dot { position:absolute; top:-2px; right:-2px; width:9px; height:9px; background:#F5B942; border-radius:50%; border:2px solid #000; }
   .notif-panel { position:absolute; top:48px; right:0; width:320px; max-width:calc(100vw - 32px); max-height:400px; overflow-y:auto; z-index:35; }
+  html[dir="rtl"] .notif-panel { right:auto; left:0; }
+  html[dir="rtl"] body, html[dir="rtl"] .display { font-family:'Noto Sans Arabic','Inter',sans-serif; }
+  html[dir="rtl"] .nav-link.active { box-shadow: inset -2px 0 0 var(--accent-color, #6C5CE7); }
+  html[dir="rtl"] .mr-3, html[dir="rtl"] .mr-2 { margin-right:0; margin-left:0.75rem; }
+  html[dir="rtl"] .ml-3 { margin-left:0; margin-right:0.75rem; }
+  html[dir="rtl"] #sidebar { border-right:none; border-left:1px solid var(--border-c, #1E1E1E); }
+  html[dir="rtl"] .chat-bubble-me { border-radius:14px 14px 14px 3px; }
+  html[dir="rtl"] .chat-bubble-them { border-radius:14px 14px 3px 14px; }
+  @media (max-width: 767px) {
+    html[dir="rtl"] #sidebar { transform:translateX(100%); left:auto; right:0; }
+    html[dir="rtl"] #sidebar.open { transform:translateX(0); }
+  }
+  .lang-option { opacity:0.45; }
+  .lang-option-active { opacity:1; background:rgba(108,92,231,0.18); }
+  #lang-panel { animation:langPop .15s ease; transform-origin:top right; }
+  html[dir="rtl"] #lang-panel { right:auto; left:0; transform-origin:top left; }
+  @keyframes langPop { from{ opacity:0; transform:scale(0.9) translateY(-4px);} to{ opacity:1; transform:scale(1) translateY(0);} }
   .checklist-item { display:flex; align-items:center; gap:10px; padding:8px 0; }
   .checklist-check { width:20px; height:20px; border-radius:6px; border:1.5px solid #2A2A2A; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12px; }
   .checklist-check.done { background:#6C5CE7; border-color:#6C5CE7; color:#fff; }
@@ -90,10 +122,41 @@ tailwind.config = {
   .info-btn:hover { border-color:#6C5CE7; color:#6C5CE7; }
   #sidebar { transition: transform .25s ease; }
   @media (max-width: 767px) {
-    #sidebar { position:fixed; inset-y:0; left:0; z-index:50; transform:translateX(-100%); width:78vw; max-width:300px; }
+    #sidebar { position:fixed; top:0; left:0; z-index:50; transform:translateX(-100%); width:78vw; max-width:300px; height:100vh; height:var(--app-height, 100dvh); }
     #sidebar.open { transform:translateX(0); }
+    #sidebar nav { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y; }
   }
+  @media (max-width: 767px) {
+    #app { height:100vh; height:var(--app-height, 100dvh); }
+  }
+  html, body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+  * { -webkit-tap-highlight-color: transparent; }
+  button, a, .checklist-check { touch-action: manipulation; }
+  button:active, .nav-link:active, .checklist-check:active { transform: scale(0.96); }
+  @media (max-width: 767px) {
+    button, .nav-link, input, select, textarea { font-size: 16px; } /* prevents iOS auto-zoom on focus */
+    main { padding-bottom: 88px !important; }
+    #quickActionsWrap { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  }
+
+  /* Bottom tab bar (mobile only) */
+  #bottomNav { position:fixed; bottom:0; left:0; right:0; z-index:45; background:var(--card-c); border-top:1px solid var(--border-c); padding-bottom:env(safe-area-inset-bottom, 0px); display:flex; }
+  .bottom-nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:8px 2px 10px; color:var(--muted-c); font-size:10px; font-weight:500; transition:.15s; position:relative; }
+  .bottom-nav-item .bn-icon { font-size:19px; line-height:1; }
+  .bottom-nav-item.active { color:#6C5CE7; }
+  .bottom-nav-item.active .bn-icon { transform:translateY(-1px); }
+  .bottom-nav-dot { position:absolute; top:4px; right:calc(50% - 16px); width:7px; height:7px; background:#F5B942; border-radius:50%; border:1.5px solid var(--card-c); }
+  @media (min-width: 768px) { #bottomNav { display:none; } }
+
+  /* Quick Actions FAB */
+  #quick-actions-fab { transition:transform .2s ease, box-shadow .2s ease; box-shadow:0 8px 24px -6px rgba(108,92,231,0.6); }
+  #quick-actions-fab:hover { box-shadow:0 10px 30px -6px rgba(108,92,231,0.8); }
+  #quick-actions-fab.rotate-45 { transform:rotate(45deg); }
+  #quick-actions-menu { animation:fabPop .18s ease; }
+  @keyframes fabPop { from{ opacity:0; transform:translateY(8px) scale(0.9);} to{ opacity:1; transform:translateY(0) scale(1);} }
+  .fab-item { box-shadow:0 6px 18px -6px rgba(0,0,0,0.6); }
 </style>
+
 </head>
 <body class="text-text antialiased">
 
@@ -121,49 +184,50 @@ tailwind.config = {
     </div>
     <div class="px-6 pt-4 space-y-2">
       <button onclick="openPalette()" class="w-full flex items-center justify-between px-3 py-2 bg-black border border-border rounded-lg text-muted text-xs hover:border-accent/50 transition">
-        <span class="flex items-center"><span class="mr-2">⌕</span>Quick search</span>
+        <span class="flex items-center"><span class="mr-2">⌕</span><span data-i18n="sidebar.search">Quick search</span></span>
         <kbd>⌘K</kbd>
       </button>
       <button onclick="openHelp()" class="w-full flex items-center justify-between px-3 py-2 bg-black border border-border rounded-lg text-muted text-xs hover:border-accent/50 transition">
-        <span class="flex items-center"><span class="mr-2">?</span>Help & Guide</span>
+        <span class="flex items-center"><span class="mr-2">?</span><span data-i18n="sidebar.help">Help & Guide</span></span>
       </button>
     </div>
     <nav class="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-hide min-h-0">
-      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-1">Overview</p>
-      <a href="#" data-page="dashboard" class="nav-link active flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◆</span>Dashboard</a>
-      <a href="#" data-page="messages" class="nav-link flex items-center justify-between px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="flex items-center"><span class="mr-3">✉</span>Messages</span><span id="unread-badge" class="hidden bg-accent text-white text-[10px] rounded-full px-1.5 py-0.5"></span></a>
-      <a href="#" data-page="clients" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◇</span>Clients</a>
+      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-1" data-i18n="sidebar.overview">Overview</p>
+      <a href="#" data-page="dashboard" class="nav-link active flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◆</span><span data-i18n="nav.dashboard">Dashboard</span></a>
+      <a href="#" data-page="messages" class="nav-link flex items-center justify-between px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="flex items-center"><span class="mr-3">✉</span><span data-i18n="nav.messages">Messages</span></span><span id="unread-badge" class="hidden bg-accent text-white text-[10px] rounded-full px-1.5 py-0.5"></span></a>
+      <a href="#" data-page="clients" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◇</span><span data-i18n="nav.clients">Clients</span></a>
 
-      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4">Coaching Tools</p>
-      <a href="#" data-page="planner" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▤</span>Plan Builder</a>
-      <a href="#" data-page="live" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">●</span>Live Sessions</a>
-      <a href="#" data-page="library" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▦</span>Resource Library</a>
-      <a href="#" data-page="feedback" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">★</span>Client Feedback</a>
-      <a href="#" data-page="review" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▶</span>Vision Review</a>
+      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4" data-i18n="sidebar.coachingTools">Coaching Tools</p>
+      <a href="#" data-page="planner" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▤</span><span data-i18n="nav.planner">Plan Builder</span></a>
+      <a href="#" data-page="nutrition" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◍</span><span data-i18n="nav.nutrition">Nutrition</span></a>
+      <a href="#" data-page="live" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">●</span><span data-i18n="nav.live">Live Sessions</span></a>
+      <a href="#" data-page="library" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▦</span><span data-i18n="nav.library">Resource Library</span></a>
+      <a href="#" data-page="feedback" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">★</span><span data-i18n="nav.feedback">Client Feedback</span></a>
+      <a href="#" data-page="review" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▶</span><span data-i18n="nav.review">Vision Review</span></a>
 
-      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4">Client Monitoring</p>
-      <a href="#" data-page="points" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◈</span>Points & Streaks</a>
-      <a href="#" data-page="readiness" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◎</span>Readiness</a>
-      <a href="#" data-page="vault" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▣</span>Progress Vault</a>
-      <a href="#" data-page="community" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◐</span>Community</a>
-      <a href="#" data-page="cohorts" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">⬢</span>Cohorts</a>
+      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4" data-i18n="sidebar.clientMonitoring">Client Monitoring</p>
+      <a href="#" data-page="points" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◈</span><span data-i18n="nav.points">Points & Streaks</span></a>
+      <a href="#" data-page="readiness" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◎</span><span data-i18n="nav.readiness">Readiness</span></a>
+      <a href="#" data-page="vault" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▣</span><span data-i18n="nav.vault">Progress Vault</span></a>
+      <a href="#" data-page="community" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◐</span><span data-i18n="nav.community">Community</span></a>
+      <a href="#" data-page="cohorts" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">⬢</span><span data-i18n="nav.cohorts">Cohorts</span></a>
 
-      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4">Automation & Insight</p>
-      <a href="#" data-page="automations" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">⚡</span>Automations</a>
-      <a href="#" data-page="reports" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▩</span>Reports</a>
-      <a href="#" data-page="contracts" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">✎</span>Contracts</a>
+      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4" data-i18n="sidebar.automation">Automation & Insight</p>
+      <a href="#" data-page="automations" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">⚡</span><span data-i18n="nav.automations">Automations</span></a>
+      <a href="#" data-page="reports" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▩</span><span data-i18n="nav.reports">Reports</span></a>
+      <a href="#" data-page="contracts" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">✎</span><span data-i18n="nav.contracts">Contracts</span></a>
 
-      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4">Business</p>
-      <a href="#" data-page="pipeline" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">⬡</span>Pipeline</a>
-      <a href="#" data-page="invoices" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▥</span>Invoices</a>
-      <a href="#" data-page="shop" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▨</span>Shop</a>
-      <a href="#" data-page="referrals" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">↗</span>Referrals</a>
-      <a href="#" data-page="verification" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">✓</span>Verification</a>
-      <a href="#" data-page="account" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◉</span>Account</a>
+      <p class="text-[10px] text-muted uppercase tracking-widest px-4 mb-2 mt-4" data-i18n="sidebar.business">Business</p>
+      <a href="#" data-page="pipeline" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">⬡</span><span data-i18n="nav.pipeline">Pipeline</span></a>
+      <a href="#" data-page="invoices" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▥</span><span data-i18n="nav.invoices">Invoices</span></a>
+      <a href="#" data-page="shop" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">▨</span><span data-i18n="nav.shop">Shop</span></a>
+      <a href="#" data-page="referrals" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">↗</span><span data-i18n="nav.referrals">Referrals</span></a>
+      <a href="#" data-page="verification" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">✓</span><span data-i18n="nav.verification">Verification</span></a>
+      <a href="#" data-page="account" class="nav-link flex items-center px-4 py-2.5 text-sm font-medium text-muted rounded-lg transition-all"><span class="mr-3">◉</span><span data-i18n="nav.account">Account</span></a>
     </nav>
     <div class="px-4 pb-2">
       <button onclick="openClientPreview()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-black border border-border rounded-lg text-muted text-xs hover:border-accent/50 hover:text-white transition">
-        <span>◑</span> View as Client
+        <span>◑</span> <span data-i18n="sidebar.viewAsClient">View as Client</span>
       </button>
     </div>
     <div class="p-4 border-t border-border">
@@ -181,6 +245,19 @@ tailwind.config = {
       <button onclick="openSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center text-white text-xl leading-none">☰</button>
       <h1 class="md:hidden display text-lg font-bold text-white">Penguins 🐧<span class="text-accent">.</span></h1>
       <div class="flex-1"></div>
+      <div class="relative" id="langSwitchWrap">
+        <button onclick="toggleLangPanel(event)" class="w-10 h-10 rounded-full bg-black border border-border flex items-center justify-center text-sm hover:border-accent/50 transition">
+          <span id="lang-current-flag">🇬🇧</span>
+        </button>
+        <div id="lang-panel" class="hidden absolute top-12 right-0 flex items-center gap-1.5 p-1.5 rounded-full bg-black border border-border z-40 shadow-2xl">
+          <button onclick="setLang('en')" data-lang="en" class="lang-option w-8 h-8 rounded-full flex items-center justify-center text-sm transition">🇬🇧</button>
+          <button onclick="setLang('de')" data-lang="de" class="lang-option w-8 h-8 rounded-full flex items-center justify-center text-sm transition">🇩🇪</button>
+          <button onclick="setLang('ar')" data-lang="ar" class="lang-option w-8 h-8 rounded-full flex items-center justify-center text-sm transition">🇸🇦</button>
+          <button onclick="setLang('fr')" data-lang="fr" class="lang-option w-8 h-8 rounded-full flex items-center justify-center text-sm transition">🇫🇷</button>
+          <button onclick="setLang('es')" data-lang="es" class="lang-option w-8 h-8 rounded-full flex items-center justify-center text-sm transition">🇪🇸</button>
+        </div>
+      </div>
+      <button onclick="toggleColorMode()" id="colorModeBtn" class="w-10 h-10 rounded-full bg-black border border-border flex items-center justify-center text-white hover:border-accent/50 transition">🌙</button>
       <div class="relative" id="notifBellWrap">
         <button onclick="toggleNotifPanel()" class="relative w-10 h-10 rounded-full bg-black border border-border flex items-center justify-center text-white hover:border-accent/50 transition">
           🔔
@@ -282,6 +359,22 @@ tailwind.config = {
           <h3 class="display text-lg font-semibold text-white mb-4">Sent Plans</h3>
           <div id="list-plans" class="space-y-3 max-h-[550px] overflow-y-auto thin-scroll pr-2"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== NUTRITION (subscribed clients only) ===== -->
+    <div id="page-nutrition" class="page">
+      <header class="mb-6"><h2 class="display text-3xl font-bold text-white">Nutrition</h2><p class="text-muted mt-1">Set macro targets and track intake — only for clients subscribed to the Nutrition add-on.</p></header>
+
+      <div class="mb-8">
+        <h3 class="display text-sm font-semibold text-white tracking-wide uppercase mb-3">Subscribed Clients</h3>
+        <div id="list-nutrition-subscribed" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div>
+        <h3 class="display text-sm font-semibold text-white tracking-wide uppercase mb-3">Not Subscribed</h3>
+        <p class="text-muted text-xs mb-3">These clients don't have the Nutrition add-on. Enable it to start setting macro targets for them.</p>
+        <div id="list-nutrition-unsubscribed" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
     </div>
 
@@ -723,7 +816,26 @@ tailwind.config = {
   </div>
 </div>
 
-<!-- ================= CLIENT PREVIEW (VIEW AS CLIENT) ================= -->
+<!-- ================= NUTRITION TARGETS MODAL ================= -->
+<div id="nutritionModal" class="modal-overlay hidden" onclick="if(event.target===this)closeNutritionModal()">
+  <div class="card rounded-2xl w-full max-w-md mx-4 p-6">
+    <h3 class="display text-lg font-semibold text-white mb-1">Set Macro Targets</h3>
+    <p class="text-muted text-xs mb-4" id="nutrition-modal-client"></p>
+    <form id="form-nutrition-targets" class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs text-muted mb-1 block">Calories</label><input type="number" name="calories" required class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+        <div><label class="text-xs text-muted mb-1 block">Protein (g)</label><input type="number" name="protein" required class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+        <div><label class="text-xs text-muted mb-1 block">Carbs (g)</label><input type="number" name="carbs" required class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+        <div><label class="text-xs text-muted mb-1 block">Fats (g)</label><input type="number" name="fats" required class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+      </div>
+      <div><label class="text-xs text-muted mb-1 block">Notes for client</label><textarea name="notes" rows="2" class="w-full input-dark rounded-lg px-4 py-2 text-sm" placeholder="Any guidance to include..."></textarea></div>
+      <div class="flex gap-2">
+        <button type="button" onclick="closeNutritionModal()" class="flex-1 py-2.5 bg-black border border-border text-muted font-medium rounded-lg hover:text-white transition">Cancel</button>
+        <button type="submit" class="flex-1 py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-indigo-500 transition glow">Save Targets</button>
+      </div>
+    </form>
+  </div>
+</div>
 <div id="clientPreviewBar" class="client-preview-bar hidden">You're viewing Penguins as a client would see it — <button onclick="closeClientPreview()" class="underline font-bold">Exit Preview</button></div>
 <div id="clientPreviewOverlay" class="modal-overlay hidden" style="padding-top:4vh;">
   <div class="card rounded-2xl w-full max-w-lg mx-4 max-h-[88vh] overflow-y-auto thin-scroll">
@@ -802,6 +914,8 @@ let db = null;
 function defaultData() {
   return {
     seenWelcome: false,
+    colorMode: 'dark',
+    lang: 'en',
     tasks: [
       { id: 1, text: 'Review this week\'s check-ins', done: false },
       { id: 2, text: 'Follow up with Liv Andersen (Pipeline)', done: false }
@@ -848,11 +962,20 @@ function defaultData() {
     ],
     referrals: { clicks: 247, signups: 31 },
     clients: [
-      { name: 'Alex M.', email: 'alex.m@example.com', phone: '', status: 'Active', tag: 'Fitness', joined: 'Jan 2025', notes: 'Prefers morning sessions. Training for a powerlifting meet.' },
-      { name: 'Sarah K.', email: 'sarah.k@example.com', phone: '', status: 'Active', tag: 'Nutrition', joined: 'Feb 2025', notes: 'Cutting phase, sensitive lower back — avoid heavy deadlifts.' },
-      { name: 'Mike T.', email: 'mike.t@example.com', phone: '', status: 'Active', tag: 'Fitness', joined: 'Nov 2024', notes: 'Consistent, responds well to public accountability.' },
-      { name: 'Emma R.', email: 'emma.r@example.com', phone: '', status: 'Paused', tag: 'Mindset', joined: 'Mar 2025', notes: 'Paused for travel, resuming next month.' }
+      { name: 'Alex M.', email: 'alex.m@example.com', phone: '', status: 'Active', tag: 'Fitness', joined: 'Jan 2025', notes: 'Prefers morning sessions. Training for a powerlifting meet.', nutrition: false },
+      { name: 'Sarah K.', email: 'sarah.k@example.com', phone: '', status: 'Active', tag: 'Nutrition', joined: 'Feb 2025', notes: 'Cutting phase, sensitive lower back — avoid heavy deadlifts.', nutrition: true },
+      { name: 'Mike T.', email: 'mike.t@example.com', phone: '', status: 'Active', tag: 'Fitness', joined: 'Nov 2024', notes: 'Consistent, responds well to public accountability.', nutrition: false },
+      { name: 'Emma R.', email: 'emma.r@example.com', phone: '', status: 'Paused', tag: 'Mindset', joined: 'Mar 2025', notes: 'Paused for travel, resuming next month.', nutrition: false }
     ],
+    nutritionTargets: {
+      'Sarah K.': { calories: 1800, protein: 150, carbs: 120, fats: 55, notes: 'Cut phase — prioritize protein, keep carbs around training days.' }
+    },
+    nutritionLogs: {
+      'Sarah K.': [
+        { date: 'Jul 30', calories: 1780, protein: 148, carbs: 115, fats: 52 },
+        { date: 'Jul 31', calories: 1820, protein: 155, carbs: 125, fats: 54 }
+      ]
+    },
     leads: [
       { id: 1, name: 'Priya Shah', email: 'priya@example.com', stage: 'New', value: 450, notes: 'Found us via Instagram.', date: '2 days ago' },
       { id: 2, name: 'Daniel Cho', email: 'daniel@example.com', stage: 'Contacted', value: 900, notes: 'Interested in the 12-week program.', date: '4 days ago' },
@@ -916,6 +1039,10 @@ async function loadData() {
   } catch (e) {
     db = defaultData();
   }
+  if (!db.lang) db.lang = 'en';
+  if (!db.colorMode) db.colorMode = 'dark';
+  if (!db.nutritionTargets) db.nutritionTargets = {};
+  if (!db.nutritionLogs) db.nutritionLogs = {};
 }
 async function saveData() {
   try { await window.storage.set(DATA_KEY, JSON.stringify(db), false); }
@@ -927,11 +1054,50 @@ async function saveData() {
 // ==========================================
 async function enterApp() {
   await loadData();
+  applyColorMode();
   renderAll();
   buildChart();
   setLiveView('list');
   maybeShowWelcome();
 }
+
+// ==========================================
+// COLOR MODE (light / dark)
+// ==========================================
+function applyColorMode() {
+  const mode = (db && db.colorMode) || 'dark';
+  document.documentElement.setAttribute('data-theme', mode);
+  const btn = document.getElementById('colorModeBtn');
+  if (btn) btn.innerText = mode === 'light' ? '☀️' : '🌙';
+}
+window.toggleColorMode = () => {
+  db.colorMode = (db.colorMode === 'light') ? 'dark' : 'light';
+  saveData();
+  applyColorMode();
+};
+
+// ==========================================
+// QUICK ACTIONS (floating action button)
+// ==========================================
+window.toggleQuickActions = () => {
+  document.getElementById('quick-actions-menu').classList.toggle('hidden');
+  document.getElementById('quick-actions-fab').classList.toggle('rotate-45');
+};
+window.quickAction = (action) => {
+  document.getElementById('quick-actions-menu').classList.add('hidden');
+  document.getElementById('quick-actions-fab').classList.remove('rotate-45');
+  if (action === 'plan') navigateTo('planner');
+  else if (action === 'invoice') navigateTo('invoices');
+  else if (action === 'lead') { navigateTo('pipeline'); setTimeout(openAddLead, 150); }
+  else if (action === 'message') navigateTo('messages');
+};
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('quickActionsWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('quick-actions-menu').classList.add('hidden');
+    document.getElementById('quick-actions-fab').classList.remove('rotate-45');
+  }
+});
 
 // ==========================================
 // ROUTER
@@ -1105,6 +1271,9 @@ function renderAll() {
   renderChecklist();
   renderTasks();
   renderNotifBell();
+
+  renderNutritionPage();
+  applyTranslations();
 }
 
 // ==========================================
@@ -1356,6 +1525,7 @@ window.openClientModal = (name) => {
         <div>
           <h3 class="display text-xl font-bold text-white">${c.name}</h3>
           <p class="text-muted text-sm">${c.tag} · ${c.status} · Client since ${c.joined}</p>
+          <button onclick="toggleNutritionSub('${c.name.replace(/'/g,"\\'")}')" class="mt-1.5 inline-block text-[10px] px-2 py-0.5 rounded-full font-medium transition ${c.nutrition ? 'bg-accent/15 text-accent' : 'bg-border text-muted hover:text-accent'}">${c.nutrition ? '◍ Nutrition Enabled' : '◍ Enable Nutrition'}</button>
         </div>
       </div>
       <button onclick="closeClientModal()" class="text-muted hover:text-white text-xl leading-none">×</button>
@@ -1783,6 +1953,7 @@ const PAGE_INFO = [
   { label:'Messages', icon:'✉', text:'Direct chat with each client. Pick a client on the left, type in the box, hit send.' },
   { label:'Clients', icon:'◇', text:'Every client in one place. Search or filter by status, then click a card to see their full profile: plans, feedback, points, readiness — all in one modal.' },
   { label:'Plan Builder', icon:'▤', text:'Build a structured program using the searchable exercise library on the left (click an exercise to add it), or just add freeform notes. Assign it to a client and send.' },
+  { label:'Nutrition', icon:'◍', text:'Set macro targets (calories, protein, carbs, fats) for clients on the Nutrition add-on. Clients without the add-on won\'t appear here until you enable it for them.' },
   { label:'Live Sessions', icon:'●', text:'Schedule 1:1 or group calls, or open bookable time slots your clients can claim themselves. Switch to Calendar view to see the week at a glance.' },
   { label:'Resource Library', icon:'▦', text:'Upload PDF guides and programs. Mark each Free or Paid with a price. Note: this is a demo uploader — actual file hosting needs a backend.' },
   { label:'Client Feedback', icon:'★', text:'Reviews and messages clients leave you. Reply inline to keep the conversation going.' },
@@ -1884,6 +2055,191 @@ document.getElementById('form-task').onsubmit = e => {
 };
 
 // ==========================================
+// NUTRITION (add-on, subscribed clients only)
+// ==========================================
+function renderNutritionPage() {
+  const subEl = document.getElementById('list-nutrition-subscribed');
+  const unsubEl = document.getElementById('list-nutrition-unsubscribed');
+  if (!subEl || !unsubEl) return;
+
+  const subscribed = db.clients.filter(c => c.nutrition);
+  const unsubscribed = db.clients.filter(c => !c.nutrition);
+
+  subEl.innerHTML = subscribed.length ? subscribed.map(c => {
+    const tgt = db.nutritionTargets[c.name];
+    const logs = db.nutritionLogs[c.name] || [];
+    const last = logs[logs.length - 1];
+    return `<div class="card rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">${c.name[0]}</div>
+          <div><p class="text-white font-semibold text-sm">${c.name}</p><p class="text-muted text-xs">${c.tag}</p></div>
+        </div>
+        <button onclick="toggleNutritionSub('${c.name.replace(/'/g,"\\'")}')" class="text-red-400/60 hover:text-red-400 text-[11px]">Disable</button>
+      </div>
+      ${tgt ? `
+        <div class="grid grid-cols-4 gap-2 text-center mb-3">
+          <div class="bg-black border border-border rounded-lg py-2"><p class="text-white text-sm font-bold">${tgt.calories}</p><p class="text-muted text-[10px]">kcal</p></div>
+          <div class="bg-black border border-border rounded-lg py-2"><p class="text-white text-sm font-bold">${tgt.protein}g</p><p class="text-muted text-[10px]">protein</p></div>
+          <div class="bg-black border border-border rounded-lg py-2"><p class="text-white text-sm font-bold">${tgt.carbs}g</p><p class="text-muted text-[10px]">carbs</p></div>
+          <div class="bg-black border border-border rounded-lg py-2"><p class="text-white text-sm font-bold">${tgt.fats}g</p><p class="text-muted text-[10px]">fats</p></div>
+        </div>
+        ${last ? `<p class="text-muted text-[11px] mb-3">Last logged (${last.date}): ${last.calories} kcal, P${last.protein} C${last.carbs} F${last.fats}</p>` : '<p class="text-muted text-[11px] mb-3">No intake logged by client yet.</p>'}
+      ` : '<p class="text-muted text-xs mb-3">No macro targets set yet.</p>'}
+      <button onclick="openNutritionModal('${c.name.replace(/'/g,"\\'")}')" class="w-full py-2 bg-accent/15 text-accent text-xs font-semibold rounded-lg hover:bg-accent/25 transition">${tgt ? 'Edit Targets' : 'Set Targets'}</button>
+    </div>`;
+  }).join('') : '<p class="text-muted text-sm text-center py-8 sm:col-span-2 lg:col-span-3">No clients subscribed to Nutrition yet.</p>';
+
+  unsubEl.innerHTML = unsubscribed.length ? unsubscribed.map(c => `
+    <div class="card rounded-2xl p-5 opacity-70">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-full bg-black border border-border flex items-center justify-center text-muted font-bold">${c.name[0]}</div>
+        <div><p class="text-white font-semibold text-sm">${c.name}</p><p class="text-muted text-xs">${c.tag}</p></div>
+      </div>
+      <button onclick="toggleNutritionSub('${c.name.replace(/'/g,"\\'")}')" class="w-full py-2 bg-black border border-dashed border-border text-muted text-xs font-medium rounded-lg hover:border-accent/50 hover:text-accent transition">+ Enable Nutrition Add-on</button>
+    </div>`).join('') : '<p class="text-muted text-sm text-center py-8 sm:col-span-2 lg:col-span-3">Every client is subscribed to Nutrition.</p>';
+}
+window.toggleNutritionSub = (name) => {
+  const c = db.clients.find(x => x.name === name);
+  if (c) {
+    c.nutrition = !c.nutrition; saveData(); renderAll();
+    toast(c.nutrition ? `✅ Nutrition enabled for ${name}.` : `Nutrition disabled for ${name}.`);
+    if (!document.getElementById('clientModal').classList.contains('hidden')) openClientModal(name);
+  }
+};
+window.openNutritionModal = (name) => {
+  document.getElementById('nutrition-modal-client').innerText = name;
+  const form = document.getElementById('form-nutrition-targets');
+  form.dataset.client = name;
+  const tgt = db.nutritionTargets[name];
+  form.querySelector('[name="calories"]').value = tgt ? tgt.calories : '';
+  form.querySelector('[name="protein"]').value = tgt ? tgt.protein : '';
+  form.querySelector('[name="carbs"]').value = tgt ? tgt.carbs : '';
+  form.querySelector('[name="fats"]').value = tgt ? tgt.fats : '';
+  form.querySelector('[name="notes"]').value = tgt ? (tgt.notes || '') : '';
+  document.getElementById('nutritionModal').classList.remove('hidden');
+};
+window.closeNutritionModal = () => document.getElementById('nutritionModal').classList.add('hidden');
+document.getElementById('form-nutrition-targets').onsubmit = e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const name = e.target.dataset.client;
+  db.nutritionTargets[name] = {
+    calories: parseFloat(f.get('calories')) || 0,
+    protein: parseFloat(f.get('protein')) || 0,
+    carbs: parseFloat(f.get('carbs')) || 0,
+    fats: parseFloat(f.get('fats')) || 0,
+    notes: f.get('notes') || ''
+  };
+  saveData(); closeNutritionModal(); renderNutritionPage();
+  toast(`✅ Macro targets saved for ${name}.`);
+};
+
+// ==========================================
+// I18N (English / German / Arabic / French / Spanish)
+// ==========================================
+const I18N = {
+  en: {
+    "sidebar.search":"Quick search","sidebar.help":"Help & Guide","sidebar.overview":"Overview",
+    "nav.dashboard":"Dashboard","nav.messages":"Messages","nav.clients":"Clients",
+    "sidebar.coachingTools":"Coaching Tools","nav.planner":"Plan Builder","nav.nutrition":"Nutrition",
+    "nav.live":"Live Sessions","nav.library":"Resource Library","nav.feedback":"Client Feedback","nav.review":"Vision Review",
+    "sidebar.clientMonitoring":"Client Monitoring","nav.points":"Points & Streaks","nav.readiness":"Readiness",
+    "nav.vault":"Progress Vault","nav.community":"Community","nav.cohorts":"Cohorts",
+    "sidebar.automation":"Automation & Insight","nav.automations":"Automations","nav.reports":"Reports","nav.contracts":"Contracts",
+    "sidebar.business":"Business","nav.pipeline":"Pipeline","nav.invoices":"Invoices","nav.shop":"Shop",
+    "nav.referrals":"Referrals","nav.verification":"Verification","nav.account":"Account",
+    "sidebar.viewAsClient":"View as Client"
+  },
+  de: {
+    "sidebar.search":"Schnellsuche","sidebar.help":"Hilfe & Anleitung","sidebar.overview":"Übersicht",
+    "nav.dashboard":"Dashboard","nav.messages":"Nachrichten","nav.clients":"Klienten",
+    "sidebar.coachingTools":"Coaching-Tools","nav.planner":"Plan-Ersteller","nav.nutrition":"Ernährung",
+    "nav.live":"Live-Sitzungen","nav.library":"Ressourcen","nav.feedback":"Kundenfeedback","nav.review":"Video-Analyse",
+    "sidebar.clientMonitoring":"Klienten-Überwachung","nav.points":"Punkte & Serien","nav.readiness":"Bereitschaft",
+    "nav.vault":"Fortschritt","nav.community":"Community","nav.cohorts":"Gruppen",
+    "sidebar.automation":"Automatisierung","nav.automations":"Automatisierungen","nav.reports":"Berichte","nav.contracts":"Verträge",
+    "sidebar.business":"Geschäftliches","nav.pipeline":"Pipeline","nav.invoices":"Rechnungen","nav.shop":"Shop",
+    "nav.referrals":"Empfehlungen","nav.verification":"Verifizierung","nav.account":"Konto",
+    "sidebar.viewAsClient":"Als Klient ansehen"
+  },
+  ar: {
+    "sidebar.search":"بحث سريع","sidebar.help":"المساعدة والدليل","sidebar.overview":"نظرة عامة",
+    "nav.dashboard":"الرئيسية","nav.messages":"الرسائل","nav.clients":"العملاء",
+    "sidebar.coachingTools":"أدوات التدريب","nav.planner":"باني الخطط","nav.nutrition":"التغذية",
+    "nav.live":"الجلسات المباشرة","nav.library":"مكتبة الموارد","nav.feedback":"تقييمات العملاء","nav.review":"مراجعة الأداء",
+    "sidebar.clientMonitoring":"متابعة العملاء","nav.points":"النقاط والسلاسل","nav.readiness":"الجاهزية",
+    "nav.vault":"خزينة التقدم","nav.community":"المجتمع","nav.cohorts":"المجموعات",
+    "sidebar.automation":"الأتمتة والرؤى","nav.automations":"الأتمتة","nav.reports":"التقارير","nav.contracts":"العقود",
+    "sidebar.business":"الأعمال","nav.pipeline":"خط المبيعات","nav.invoices":"الفواتير","nav.shop":"المتجر",
+    "nav.referrals":"الإحالات","nav.verification":"التحقق","nav.account":"الحساب",
+    "sidebar.viewAsClient":"عرض كعميل"
+  },
+  fr: {
+    "sidebar.search":"Recherche rapide","sidebar.help":"Aide et guide","sidebar.overview":"Aperçu",
+    "nav.dashboard":"Tableau de bord","nav.messages":"Messages","nav.clients":"Clients",
+    "sidebar.coachingTools":"Outils de coaching","nav.planner":"Créateur de programme","nav.nutrition":"Nutrition",
+    "nav.live":"Séances en direct","nav.library":"Bibliothèque","nav.feedback":"Avis clients","nav.review":"Analyse vidéo",
+    "sidebar.clientMonitoring":"Suivi des clients","nav.points":"Points et séries","nav.readiness":"Forme",
+    "nav.vault":"Suivi des progrès","nav.community":"Communauté","nav.cohorts":"Groupes",
+    "sidebar.automation":"Automatisation","nav.automations":"Automatisations","nav.reports":"Rapports","nav.contracts":"Contrats",
+    "sidebar.business":"Affaires","nav.pipeline":"Pipeline","nav.invoices":"Factures","nav.shop":"Boutique",
+    "nav.referrals":"Parrainage","nav.verification":"Vérification","nav.account":"Compte",
+    "sidebar.viewAsClient":"Voir comme client"
+  },
+  es: {
+    "sidebar.search":"Búsqueda rápida","sidebar.help":"Ayuda y guía","sidebar.overview":"Resumen",
+    "nav.dashboard":"Inicio","nav.messages":"Mensajes","nav.clients":"Clientes",
+    "sidebar.coachingTools":"Herramientas","nav.planner":"Creador de planes","nav.nutrition":"Nutrición",
+    "nav.live":"Sesiones en vivo","nav.library":"Biblioteca","nav.feedback":"Comentarios","nav.review":"Revisión técnica",
+    "sidebar.clientMonitoring":"Seguimiento de clientes","nav.points":"Puntos y rachas","nav.readiness":"Preparación",
+    "nav.vault":"Progreso","nav.community":"Comunidad","nav.cohorts":"Grupos",
+    "sidebar.automation":"Automatización","nav.automations":"Automatizaciones","nav.reports":"Informes","nav.contracts":"Contratos",
+    "sidebar.business":"Negocio","nav.pipeline":"Pipeline","nav.invoices":"Facturas","nav.shop":"Tienda",
+    "nav.referrals":"Referidos","nav.verification":"Verificación","nav.account":"Cuenta",
+    "sidebar.viewAsClient":"Ver como cliente"
+  }
+};
+
+function t(key) {
+  const lang = (db && db.lang) || 'en';
+  return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key;
+}
+function applyTranslations() {
+  const lang = (db && db.lang) || 'en';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.innerText = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('.lang-option').forEach(el => {
+    el.classList.toggle('lang-option-active', el.dataset.lang === lang);
+  });
+  const flags = { en:'🇬🇧', de:'🇩🇪', ar:'🇸🇦', fr:'🇫🇷', es:'🇪🇸' };
+  const flagEl = document.getElementById('lang-current-flag');
+  if (flagEl) flagEl.innerText = flags[lang] || flags.en;
+}
+window.toggleLangPanel = (e) => {
+  if (e) e.stopPropagation();
+  document.getElementById('lang-panel').classList.toggle('hidden');
+};
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('langSwitchWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const panel = document.getElementById('lang-panel');
+    if (panel) panel.classList.add('hidden');
+  }
+});
+window.setLang = (lang) => {
+  db.lang = lang;
+  saveData();
+  document.getElementById('lang-panel').classList.add('hidden');
+  applyTranslations();
+  const msgs = { en:'🌐 Language set to English', de:'🌐 Sprache auf Deutsch eingestellt', ar:'🌐 تم تعيين اللغة إلى العربية', fr:'🌐 Langue définie sur le français', es:'🌐 Idioma establecido en español' };
+  toast(msgs[lang] || msgs.en);
+};
+
+// ==========================================
 // COMMAND PALETTE
 // ==========================================
 function navigateTo(page) {
@@ -1893,6 +2249,10 @@ function navigateTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
   if (pageEl) pageEl.classList.add('active');
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  const bnMatch = ['dashboard','clients','messages','pipeline'].includes(page) ? page : null;
+  if (bnMatch) { const bn = document.querySelector(`.bottom-nav-item[data-bn="${bnMatch}"]`); if (bn) bn.classList.add('active'); }
+  const main = document.querySelector('main'); if (main) main.scrollTop = 0;
   renderAll();
   if (page === 'review') setTimeout(initCanvas, 100);
 }
@@ -1900,7 +2260,7 @@ function navigateTo(page) {
 function paletteItems() {
   const pages = [
     ['dashboard','Dashboard','◆'],['messages','Messages','✉'],['clients','Clients','◇'],
-    ['planner','Plan Builder','▤'],['live','Live Sessions','●'],['library','Resource Library','▦'],
+    ['planner','Plan Builder','▤'],['nutrition','Nutrition','◍'],['live','Live Sessions','●'],['library','Resource Library','▦'],
     ['feedback','Client Feedback','★'],['review','Vision Review','▶'],['points','Points & Streaks','◈'],
     ['readiness','Readiness','◎'],['vault','Progress Vault','▣'],['community','Community','◐'],
     ['cohorts','Cohorts','⬢'],['automations','Automations','⚡'],['reports','Reports','▩'],['contracts','Contracts','✎'],
@@ -1994,13 +2354,49 @@ function buildChart() {
 // ==========================================
 // INIT
 // ==========================================
+// ---- Mobile viewport height fix (iOS Safari address-bar / keyboard resize bug) ----
+function syncAppHeight() {
+  const h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+  document.documentElement.style.setProperty('--app-height', h + 'px');
+}
+syncAppHeight();
+window.addEventListener('resize', syncAppHeight);
+window.addEventListener('orientationchange', () => setTimeout(syncAppHeight, 200));
+if (window.visualViewport) window.visualViewport.addEventListener('resize', syncAppHeight);
+
 (async function init() {
-  await enterApp();
-  const veil = document.getElementById('loadingVeil');
-  veil.style.opacity = '0';
-  setTimeout(()=>veil.remove(), 300);
+  try {
+    await enterApp();
+  } catch (err) {
+    console.error('Startup error:', err);
+    db = db || defaultData();
+    try { renderAll(); } catch (e2) { console.error('Fallback render also failed:', e2); }
+  } finally {
+    const veil = document.getElementById('loadingVeil');
+    if (veil) { veil.style.opacity = '0'; setTimeout(()=>veil.remove(), 300); }
+  }
 })();
 </script>
+
+<!-- ================= QUICK ACTIONS FAB ================= -->
+<div id="quickActionsWrap" class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+  <div id="quick-actions-menu" class="hidden flex flex-col items-end gap-2.5 mb-1">
+    <button onclick="quickAction('plan')" class="fab-item flex items-center gap-2 pl-4 pr-1.5 py-1.5 bg-card border border-border rounded-full text-white text-xs font-medium hover:border-accent/50 transition"><span>New Plan</span><span class="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">▤</span></button>
+    <button onclick="quickAction('invoice')" class="fab-item flex items-center gap-2 pl-4 pr-1.5 py-1.5 bg-card border border-border rounded-full text-white text-xs font-medium hover:border-accent/50 transition"><span>New Invoice</span><span class="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">▥</span></button>
+    <button onclick="quickAction('lead')" class="fab-item flex items-center gap-2 pl-4 pr-1.5 py-1.5 bg-card border border-border rounded-full text-white text-xs font-medium hover:border-accent/50 transition"><span>Add Lead</span><span class="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">⬡</span></button>
+    <button onclick="quickAction('message')" class="fab-item flex items-center gap-2 pl-4 pr-1.5 py-1.5 bg-card border border-border rounded-full text-white text-xs font-medium hover:border-accent/50 transition"><span>Message Client</span><span class="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">✉</span></button>
+  </div>
+  <button id="quick-actions-fab" onclick="toggleQuickActions()" class="w-14 h-14 rounded-full bg-accent text-white text-2xl flex items-center justify-center hover:bg-indigo-500 transition">+</button>
+</div>
+
+<!-- ================= BOTTOM NAV (mobile) ================= -->
+<div id="bottomNav">
+  <a href="#" data-bn="dashboard" onclick="event.preventDefault();navigateTo('dashboard')" class="bottom-nav-item active"><span class="bn-icon">◆</span><span>Dashboard</span></a>
+  <a href="#" data-bn="clients" onclick="event.preventDefault();navigateTo('clients')" class="bottom-nav-item"><span class="bn-icon">◇</span><span>Clients</span></a>
+  <a href="#" data-bn="messages" onclick="event.preventDefault();navigateTo('messages')" class="bottom-nav-item"><span class="bn-icon">✉</span><span id="bn-msg-dot-wrap"></span><span>Messages</span></a>
+  <a href="#" data-bn="pipeline" onclick="event.preventDefault();navigateTo('pipeline')" class="bottom-nav-item"><span class="bn-icon">⬡</span><span>Pipeline</span></a>
+  <a href="#" data-bn="more" onclick="event.preventDefault();openSidebar()" class="bottom-nav-item"><span class="bn-icon">☰</span><span>Menu</span></a>
+</div>
 
 </body>
 </html>
