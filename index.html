@@ -279,6 +279,7 @@ tailwind.config = {
       </header>
       <div id="dash-checklist" class="card rounded-2xl p-5 mb-6"></div>
       <div id="dash-insights" class="card rounded-2xl p-5 mb-6"></div>
+      <div id="dash-business-goals" class="card rounded-2xl p-5 mb-6"></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="dash-stats"></div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 card rounded-2xl p-6">
@@ -351,13 +352,20 @@ tailwind.config = {
               </div>
             </div>
             <div><label class="text-xs text-muted mb-1 block">Additional Notes / Freeform Details</label><textarea name="details" rows="3" class="w-full input-dark rounded-lg px-4 py-2 text-sm" placeholder="Nutrition notes, cues, anything else..."></textarea></div>
-            <button type="submit" class="w-full py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-indigo-500 transition glow">Send to Client →</button>
+            <div class="flex gap-2">
+              <button type="submit" class="flex-1 py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-indigo-500 transition glow">Send to Client →</button>
+              <button type="button" onclick="saveAsTemplate()" class="px-4 py-2.5 bg-black border border-border text-muted text-sm font-medium rounded-lg hover:border-accent/50 hover:text-accent transition whitespace-nowrap">Save as Template</button>
+            </div>
           </form>
         </div>
 
         <div class="card rounded-2xl p-6">
-          <h3 class="display text-lg font-semibold text-white mb-4">Sent Plans</h3>
-          <div id="list-plans" class="space-y-3 max-h-[550px] overflow-y-auto thin-scroll pr-2"></div>
+          <div class="flex bg-black border border-border rounded-lg p-1 text-xs mb-4">
+            <button id="plan-tab-sent" onclick="setPlanTab('sent')" class="flex-1 px-3 py-1.5 rounded-md font-medium transition">Sent Plans</button>
+            <button id="plan-tab-templates" onclick="setPlanTab('templates')" class="flex-1 px-3 py-1.5 rounded-md font-medium transition">Templates</button>
+          </div>
+          <div id="plan-view-sent"><div id="list-plans" class="space-y-3 max-h-[500px] overflow-y-auto thin-scroll pr-2"></div></div>
+          <div id="plan-view-templates" class="hidden"><div id="list-templates" class="space-y-3 max-h-[500px] overflow-y-auto thin-scroll pr-2"></div></div>
         </div>
       </div>
     </div>
@@ -836,6 +844,21 @@ tailwind.config = {
     </form>
   </div>
 </div>
+
+<!-- ================= BUSINESS GOALS MODAL ================= -->
+<div id="goalsModal" class="modal-overlay hidden" onclick="if(event.target===this)closeGoalsModal()">
+  <div class="card rounded-2xl w-full max-w-sm mx-4 p-6">
+    <h3 class="display text-lg font-semibold text-white mb-4">Set Business Targets</h3>
+    <form id="form-business-goals" class="space-y-4">
+      <div><label class="text-xs text-muted mb-1 block">Monthly Revenue Target ($)</label><input type="number" name="revenueTarget" required class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+      <div><label class="text-xs text-muted mb-1 block">Active Clients Target</label><input type="number" name="clientsTarget" required class="w-full input-dark rounded-lg px-4 py-2 text-sm"></div>
+      <div class="flex gap-2">
+        <button type="button" onclick="closeGoalsModal()" class="flex-1 py-2.5 bg-black border border-border text-muted font-medium rounded-lg hover:text-white transition">Cancel</button>
+        <button type="submit" class="flex-1 py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-indigo-500 transition glow">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
 <div id="clientPreviewBar" class="client-preview-bar hidden">You're viewing Penguins as a client would see it — <button onclick="closeClientPreview()" class="underline font-bold">Exit Preview</button></div>
 <div id="clientPreviewOverlay" class="modal-overlay hidden" style="padding-top:4vh;">
   <div class="card rounded-2xl w-full max-w-lg mx-4 max-h-[88vh] overflow-y-auto thin-scroll">
@@ -976,6 +999,14 @@ function defaultData() {
         { date: 'Jul 31', calories: 1820, protein: 155, carbs: 125, fats: 54 }
       ]
     },
+    planTemplates: [
+      { id: 1, title: 'Beginner Full Body (3x/wk)', type: 'Training', details: 'Barbell Back Squat: 3 x 8\nBench Press: 3 x 8\nBarbell Row: 3 x 8\nPlank: 3 x 45s' },
+      { id: 2, title: 'Cut Phase Nutrition Baseline', type: 'Nutrition', details: 'Calories: 1,800\nProtein: 150g\nCarbs: 120g\nFats: 55g' }
+    ],
+    sessionNotes: {
+      'Alex M.': [ { date: '3 days ago', text: 'Squat form improving — depth still slightly short, cue "sit back more."' } ]
+    },
+    businessGoals: { revenueTarget: 8000, clientsTarget: 6 },
     leads: [
       { id: 1, name: 'Priya Shah', email: 'priya@example.com', stage: 'New', value: 450, notes: 'Found us via Instagram.', date: '2 days ago' },
       { id: 2, name: 'Daniel Cho', email: 'daniel@example.com', stage: 'Contacted', value: 900, notes: 'Interested in the 12-week program.', date: '4 days ago' },
@@ -1043,6 +1074,9 @@ async function loadData() {
   if (!db.colorMode) db.colorMode = 'dark';
   if (!db.nutritionTargets) db.nutritionTargets = {};
   if (!db.nutritionLogs) db.nutritionLogs = {};
+  if (!db.planTemplates) db.planTemplates = [];
+  if (!db.sessionNotes) db.sessionNotes = {};
+  if (!db.businessGoals) db.businessGoals = { revenueTarget: 8000, clientsTarget: 6 };
 }
 async function saveData() {
   try { await window.storage.set(DATA_KEY, JSON.stringify(db), false); }
@@ -1058,6 +1092,7 @@ async function enterApp() {
   renderAll();
   buildChart();
   setLiveView('list');
+  setPlanTab('sent');
   maybeShowWelcome();
 }
 
@@ -1273,6 +1308,8 @@ function renderAll() {
   renderNotifBell();
 
   renderNutritionPage();
+  renderTemplates();
+  renderBusinessGoals();
   applyTranslations();
 }
 
@@ -1544,13 +1581,42 @@ window.openClientModal = (name) => {
       <p class="text-[11px] text-muted uppercase tracking-wide mb-2">Feedback (${fb.length})</p>
       ${fb.length ? fb.map(f=>`<div class="bg-black border border-border rounded-lg p-3 mb-2"><p class="text-sm text-text">"${f.msg}"</p><p class="text-gold text-xs mt-1">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</p></div>`).join('') : '<p class="text-muted text-sm">No feedback yet.</p>'}
     </div>
+    <div class="mb-5">
+      <p class="text-[11px] text-muted uppercase tracking-wide mb-2">Private Session Notes <span class="normal-case text-muted">(only visible to you)</span></p>
+      <div id="session-notes-list" class="space-y-2 mb-2 max-h-40 overflow-y-auto thin-scroll"></div>
+      <form onsubmit="addSessionNote(event,'${c.name.replace(/'/g,"\\'")}')" class="flex gap-2">
+        <input type="text" id="session-note-input" placeholder="Add a private note…" class="flex-1 input-dark rounded-lg px-3 py-1.5 text-xs">
+        <button type="submit" class="px-3 py-1.5 bg-accent/15 text-accent text-xs font-semibold rounded-lg hover:bg-accent/25 transition">Add</button>
+      </form>
+    </div>
     <div class="flex gap-2">
       <button onclick="closeClientModal();openChat('${c.name.replace(/'/g,"\\'")}');navigateTo('messages')" class="flex-1 py-2.5 bg-accent text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition">Message ${c.name.split(' ')[0]}</button>
       <button onclick="closeClientModal()" class="px-4 py-2.5 bg-black border border-border text-muted text-sm font-medium rounded-lg hover:text-white transition">Close</button>
     </div>`;
   document.getElementById('clientModal').classList.remove('hidden');
+  renderSessionNotes(name);
 };
 window.closeClientModal = () => document.getElementById('clientModal').classList.add('hidden');
+
+function renderSessionNotes(name) {
+  const el = document.getElementById('session-notes-list');
+  if (!el) return;
+  const notes = db.sessionNotes[name] || [];
+  el.innerHTML = notes.length ? [...notes].reverse().map(n => `
+    <div class="bg-black border border-border rounded-lg p-2.5">
+      <p class="text-text text-xs">${n.text}</p>
+      <p class="text-muted text-[10px] mt-1">${n.date}</p>
+    </div>`).join('') : '<p class="text-muted text-xs">No private notes yet.</p>';
+}
+window.addSessionNote = (e, name) => {
+  e.preventDefault();
+  const input = document.getElementById('session-note-input');
+  if (!input.value.trim()) return;
+  if (!db.sessionNotes[name]) db.sessionNotes[name] = [];
+  db.sessionNotes[name].push({ date: 'Just now', text: input.value.trim() });
+  input.value = '';
+  saveData(); renderSessionNotes(name);
+};
 
 // ==========================================
 // PIPELINE (LEADS, DRAG & DROP KANBAN)
@@ -1695,6 +1761,92 @@ function renderBuiltWorkout() {
       <button type="button" onclick="removeBuiltExercise(${i})" class="text-red-400/60 hover:text-red-400 text-xs">✕</button>
     </div>`).join('');
 }
+
+// ==========================================
+// PLAN TEMPLATES
+// ==========================================
+window.setPlanTab = (tab) => {
+  document.getElementById('plan-view-sent').classList.toggle('hidden', tab !== 'sent');
+  document.getElementById('plan-view-templates').classList.toggle('hidden', tab !== 'templates');
+  document.getElementById('plan-tab-sent').className = 'flex-1 px-3 py-1.5 rounded-md font-medium transition ' + (tab==='sent' ? 'bg-accent text-white' : 'text-muted');
+  document.getElementById('plan-tab-templates').className = 'flex-1 px-3 py-1.5 rounded-md font-medium transition ' + (tab==='templates' ? 'bg-accent text-white' : 'text-muted');
+};
+function renderTemplates() {
+  const el = document.getElementById('list-templates');
+  if (!el) return;
+  el.innerHTML = db.planTemplates.length ? db.planTemplates.map(t => `
+    <div class="bg-black border border-border rounded-xl p-4">
+      <div class="flex items-center gap-2 mb-1"><h4 class="text-white font-semibold text-sm">${t.title}</h4><span class="text-[10px] px-2 py-0.5 rounded-full bg-accent/15 text-accent">${t.type}</span></div>
+      <p class="text-muted text-xs whitespace-pre-line line-clamp-3">${t.details}</p>
+      <div class="flex gap-2 mt-3">
+        <button onclick="useTemplate(${t.id})" class="flex-1 py-1.5 bg-accent/15 text-accent text-xs font-semibold rounded-lg hover:bg-accent/25 transition">Use Template</button>
+        <button onclick="del('planTemplates',${t.id})" class="px-3 py-1.5 text-red-400/60 hover:text-red-400 text-xs">Delete</button>
+      </div>
+    </div>`).join('') : '<p class="text-muted text-sm text-center py-10">No templates saved yet — build a plan and click "Save as Template".</p>';
+}
+window.saveAsTemplate = () => {
+  const form = document.getElementById('form-plan');
+  const f = new FormData(form);
+  const title = f.get('title');
+  if (!title) { toast('Add a plan title first.'); return; }
+  const workoutText = builtWorkout.length ? builtWorkout.map(ex => `${ex.name}: ${ex.scheme}`).join('\n') : '';
+  const notes = f.get('details') || '';
+  const details = [workoutText, notes].filter(Boolean).join('\n\n') || 'No details added.';
+  db.planTemplates.unshift({ id: Date.now(), title, type: f.get('type'), details });
+  saveData(); renderTemplates();
+  toast('✅ Saved as template.');
+};
+window.useTemplate = (id) => {
+  const tpl = db.planTemplates.find(t => t.id === id);
+  if (!tpl) return;
+  document.querySelector('#form-plan [name="title"]').value = tpl.title;
+  document.querySelector('#form-plan [name="type"]').value = tpl.type;
+  document.querySelector('#form-plan [name="details"]').value = tpl.details;
+  builtWorkout = [];
+  renderBuiltWorkout();
+  setPlanTab('sent');
+  toast('Template loaded — pick a client and send.');
+};
+
+// ==========================================
+// BUSINESS GOALS
+// ==========================================
+function renderBusinessGoals() {
+  const el = document.getElementById('dash-business-goals');
+  if (!el) return;
+  const g = db.businessGoals;
+  const earnings = db.shop.reduce((a,b)=>a+b.price,0)*10 + db.plans.length*150 + db.library.reduce((a,b)=>a+(b.tier==='Paid'?b.price*10:0),0);
+  const revenuePct = Math.min(100, Math.round((earnings / (g.revenueTarget||1)) * 100));
+  const clientsPct = Math.min(100, Math.round((db.clients.length / (g.clientsTarget||1)) * 100));
+  el.innerHTML = `
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="display text-sm font-semibold text-white tracking-wide uppercase">Business Goals</h3>
+      <button onclick="openGoalsModal()" class="text-[11px] text-accent hover:underline">Edit Targets</button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div>
+        <div class="flex justify-between text-xs text-muted mb-1"><span>Monthly Revenue</span><span>$${Math.round(earnings).toLocaleString()} / $${g.revenueTarget.toLocaleString()}</span></div>
+        <div class="w-full h-2 bg-border rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full transition-all duration-500" style="width:${revenuePct}%"></div></div>
+      </div>
+      <div>
+        <div class="flex justify-between text-xs text-muted mb-1"><span>Active Clients</span><span>${db.clients.length} / ${g.clientsTarget}</span></div>
+        <div class="w-full h-2 bg-border rounded-full overflow-hidden"><div class="h-full bg-gold rounded-full transition-all duration-500" style="width:${clientsPct}%"></div></div>
+      </div>
+    </div>`;
+}
+window.openGoalsModal = () => {
+  document.querySelector('#form-business-goals [name="revenueTarget"]').value = db.businessGoals.revenueTarget;
+  document.querySelector('#form-business-goals [name="clientsTarget"]').value = db.businessGoals.clientsTarget;
+  document.getElementById('goalsModal').classList.remove('hidden');
+};
+window.closeGoalsModal = () => document.getElementById('goalsModal').classList.add('hidden');
+document.getElementById('form-business-goals').onsubmit = e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  db.businessGoals = { revenueTarget: parseFloat(f.get('revenueTarget'))||0, clientsTarget: parseFloat(f.get('clientsTarget'))||0 };
+  saveData(); closeGoalsModal(); renderBusinessGoals();
+  toast('✅ Targets updated.');
+};
 
 // ==========================================
 // LIVE SESSIONS: CALENDAR VIEW + BOOKABLE SLOTS
@@ -1949,10 +2101,10 @@ function maybeShowWelcome() {
 // HELP & GUIDE
 // ==========================================
 const PAGE_INFO = [
-  { label:'Dashboard', icon:'◆', text:'Your home base — earnings chart, Smart Insights (auto-flagged things needing attention), a getting-started checklist, and your task list.' },
+  { label:'Dashboard', icon:'◆', text:'Your home base — earnings chart, Smart Insights (auto-flagged things needing attention), a getting-started checklist, Business Goals (set your own revenue/client targets and track progress), and your task list.' },
   { label:'Messages', icon:'✉', text:'Direct chat with each client. Pick a client on the left, type in the box, hit send.' },
-  { label:'Clients', icon:'◇', text:'Every client in one place. Search or filter by status, then click a card to see their full profile: plans, feedback, points, readiness — all in one modal.' },
-  { label:'Plan Builder', icon:'▤', text:'Build a structured program using the searchable exercise library on the left (click an exercise to add it), or just add freeform notes. Assign it to a client and send.' },
+  { label:'Clients', icon:'◇', text:'Every client in one place. Search or filter by status, then click a card to see their full profile: plans, feedback, points, readiness, and private session notes only you can see — all in one modal.' },
+  { label:'Plan Builder', icon:'▤', text:'Build a structured program using the searchable exercise library on the left (click an exercise to add it), or just add freeform notes. Save any plan as a reusable template so you don\'t have to rebuild it next time — switch to the Templates tab to reuse or delete one.' },
   { label:'Nutrition', icon:'◍', text:'Set macro targets (calories, protein, carbs, fats) for clients on the Nutrition add-on. Clients without the add-on won\'t appear here until you enable it for them.' },
   { label:'Live Sessions', icon:'●', text:'Schedule 1:1 or group calls, or open bookable time slots your clients can claim themselves. Switch to Calendar view to see the week at a glance.' },
   { label:'Resource Library', icon:'▦', text:'Upload PDF guides and programs. Mark each Free or Paid with a price. Note: this is a demo uploader — actual file hosting needs a backend.' },
